@@ -19,7 +19,7 @@ export const chatModels: Array<ChatModel> = [
   },
   {
     id: 'gpt-4.5-preview',
-    name: 'AnotherTest Model',
+    name: 'Another Test Model',
     description: 'A test model configuration',
   },
   {

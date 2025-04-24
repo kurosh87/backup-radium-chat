@@ -41,8 +41,6 @@ This template ships with [xAI](https://x.ai) `grok-2-1212` as the default chat m
 
 You can deploy this application to Vercel with one click:
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgitlab.com%2Fradiumcloudstudio%2Fdeploy.git&env=AUTH_SECRET&envDescription=See%20.env.example&project-name=radium-cloud-ai&repository-name=radium-cloud-ai)
-
 ## Running locally
 
 You will need to use the environment variables [defined in `.env.example`](.env.example) to run Radium Cloud AI. It's recommended you use [Vercel Environment Variables](https://vercel.com/docs/projects/environment-variables) for this, but a `.env` file is all that is necessary.
