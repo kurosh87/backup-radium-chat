@@ -17,6 +17,7 @@ import {
 } from '@/components/ui/sidebar';
 import Link from 'next/link';
 import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
+import Image from 'next/image';
 
 export function AppSidebar({ user }: { user: User | undefined }) {
   const router = useRouter();
@@ -32,10 +33,19 @@ export function AppSidebar({ user }: { user: User | undefined }) {
               onClick={() => {
                 setOpenMobile(false);
               }}
-              className="flex flex-row gap-3 items-center"
+              className="inline-block"
             >
-              <span className="text-lg font-semibold px-2 hover:bg-muted rounded-md cursor-pointer">
-                Chatbot
+              <span className="flex flex-row gap-1 items-center px-2 py-1 hover:bg-muted rounded-md cursor-pointer">
+                <Image 
+                  src="/images/radium.svg" 
+                  alt="Radium Logo"
+                  width={22}
+                  height={22}
+                  className="shrink-0"
+                />
+                <span className="text-lg font-semibold">
+                  Radium AI
+                </span>
               </span>
             </Link>
             <Tooltip>
