@@ -30,9 +30,14 @@ import { requestSuggestions } from '@/lib/ai/tools/request-suggestions';
 import { getWeather } from '@/lib/ai/tools/get-weather';
 import { isProductionEnvironment } from '@/lib/constants';
 import { myProvider } from '@/lib/ai/providers';
+import { chatModels } from '@/lib/ai/models'; // Import chatModels
 
 // Define a type for the combined provider possibilities
-type CombinedProvider = OpenAIProvider | typeof myProvider | ReturnType<typeof fireworks> | ReturnType<typeof deepinfra>;
+type CombinedProvider =
+  | OpenAIProvider
+  | typeof myProvider
+  | ReturnType<typeof fireworks>
+  | ReturnType<typeof deepinfra>;
 
 export const maxDuration = 60;
 
@@ -90,6 +95,9 @@ export async function POST(request: Request) {
     let provider: CombinedProvider;
     let modelIdToUse: string; // Variable to hold the final model ID
 
+    // Find the model configuration from models.ts
+    // const modelConfig = chatModels.find((m) => m.id === selectedChatModel); // Keep finding logic if needed elsewhere, or remove
+
     // Check if the selected model is the custom Llama 2
     if (selectedChatModel === 'custom-llama2') {
       console.log('>>> Using custom OpenAI provider for Llama 2'); // Logging for clarity
@@ -98,28 +106,34 @@ export async function POST(request: Request) {
       const customModelId = process.env.CUSTOM_LLM_MODEL_ID ?? ''; // Get the specific model ID from env
 
       if (!baseURL || !customModelId) {
-        console.error("Custom Llama 2 environment variables not set properly.");
-        return new Response('Custom Llama 2 configuration error', { status: 500 });
+        console.error('Custom Llama 2 environment variables not set properly.');
+        return new Response('Custom Llama 2 configuration error', {
+          status: 500,
+        });
       }
 
       console.log(`>>>   Base URL: ${baseURL}`);
       console.log(`>>>   Model ID: ${customModelId}`);
-      console.log(`>>>   API Key: ${apiKey ? 'provided' : 'not provided (using "empty")'}`);
+      console.log(
+        `>>>   API Key: ${apiKey ? 'provided' : 'not provided (using "empty")'}`,
+      );
 
       // Create a specific OpenAI provider instance for the custom endpoint
       provider = createOpenAI({
         baseURL: baseURL,
         apiKey: apiKey, // Will use 'empty' if CUSTOM_LLM_API_KEY is set to "empty"
-        compatibility: 'compatible', // Important for non-OpenAI endpoints
+        compatibility: 'compatible',
       });
       modelIdToUse = customModelId; // Use the specific model ID from env
-    } else if (selectedChatModel === 'gpt-4.5-preview') { // Keep existing logic for other models
+    } else if (selectedChatModel === 'gpt-4.5-preview') {
+      // Keep existing logic for other models
       console.log('>>> Using default OpenAI provider for gpt-4.5-preview');
       provider = createOpenAI({
         // API key is implicitly read from OPENAI_API_KEY env var
       });
       modelIdToUse = selectedChatModel;
-    } else if (selectedChatModel === 'fireworks-deepseek-r1') { // Add condition for Fireworks Deepseek
+    } else if (selectedChatModel === 'fireworks-deepseek-r1') {
+      // Add condition for Fireworks Deepseek
       console.log('>>> Using Fireworks provider for Deepseek R1');
       // Fireworks provider reads FIREWORKS_API_KEY from env automatically
       provider = fireworks; // Set the provider
@@ -129,7 +143,59 @@ export async function POST(request: Request) {
       // DeepInfra provider reads DEEPINFRA_API_TOKEN from env automatically
       provider = deepinfra;
       modelIdToUse = 'meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8'; // Set the specific model path
+    } else if (selectedChatModel === 'deepseek-r1') {
+      // Explicit handling for deepseek-r1 using OpenAI provider
+      console.log(
+        `>>> Using custom OpenAI provider for model: ${selectedChatModel}`,
+      );
+
+      const modelConfig = chatModels.find((m) => m.id === 'deepseek-r1');
+
+      if (!modelConfig || !modelConfig.baseURL || !modelConfig.modelName) {
+        console.error(
+          `Configuration for "${selectedChatModel}" is missing baseURL or modelName in models.ts`,
+        );
+        return new Response(
+          `Configuration error for model "${selectedChatModel}"`,
+          {
+            status: 500,
+          },
+        );
+      }
+
+      const { baseURL, modelName, apiKey } = modelConfig;
+
+      // Determine the API key value - use defined value or 'empty' if not required/present
+      const apiKeyToUse =
+        apiKey?.value ?? (apiKey?.required === false ? 'empty' : undefined);
+
+      // Log details (avoid logging the actual key if not 'empty')
+      console.log(`>>>   Base URL: ${baseURL}`);
+      console.log(`>>>   Model Name: ${modelName}`);
+      console.log(
+        `>>>   API Key: ${apiKeyToUse === 'empty' ? '"empty"' : apiKeyToUse ? 'provided' : 'not provided'}`,
+      );
+
+      if (apiKey?.required === true && !apiKeyToUse) {
+        console.error(
+          `Model "${selectedChatModel}" requires an API key, but none was found.`,
+        );
+        return new Response(
+          `Model "${selectedChatModel}" configuration error - API key required`,
+          {
+            status: 500,
+          },
+        );
+      }
+
+      provider = createOpenAI({
+        baseURL: baseURL,
+        apiKey: apiKeyToUse, // Use the determined API key
+        compatibility: 'compatible',
+      });
+      modelIdToUse = modelName; // Use the specific modelName from models.ts
     } else {
+      // Fallback for models explicitly handled by myProvider (e.g., chat-model, chat-model-reasoning)
       console.log(`>>> Using myProvider for model: ${selectedChatModel}`);
       provider = myProvider; // Use the default provider from @/lib/ai/providers
       modelIdToUse = selectedChatModel;
@@ -156,8 +222,8 @@ export async function POST(request: Request) {
           messages,
           maxSteps: 5,
           experimental_activeTools:
-            selectedChatModel === 'chat-model-reasoning' || 
-            selectedChatModel === 'custom-llama2' || 
+            selectedChatModel === 'chat-model-reasoning' ||
+            selectedChatModel === 'custom-llama2' ||
             selectedChatModel === 'fireworks-deepseek-r1' ||
             selectedChatModel === 'deepinfra-llama4-maverick'
               ? []
@@ -217,9 +283,10 @@ export async function POST(request: Request) {
           experimental_telemetry: {
             isEnabled: isProductionEnvironment,
             functionId: 'stream-text',
-            metadata: { // Add model info to telemetry if needed
-              model: modelIdToUse
-            }
+            metadata: {
+              // Add model info to telemetry if needed
+              model: modelIdToUse,
+            },
           },
         });
 

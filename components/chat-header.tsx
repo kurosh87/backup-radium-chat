@@ -19,18 +19,20 @@ import {
   SheetHeader,
   SheetTitle,
   SheetTrigger,
-} from "@/components/ui/sheet";
+} from '@/components/ui/sheet';
 
 function PureChatHeader({
   chatId,
   selectedModelId,
   selectedVisibilityType,
   isReadonly,
+  showDeployButton = false,
 }: {
   chatId: string;
   selectedModelId: string;
   selectedVisibilityType: VisibilityType;
   isReadonly: boolean;
+  showDeployButton?: boolean;
 }) {
   const router = useRouter();
   const { open } = useSidebar();
@@ -75,11 +77,35 @@ function PureChatHeader({
         />
       )}
 
+      {showDeployButton && (
+        <Button
+          variant="outline"
+          className="py-1.5 px-3 h-fit md:h-[34px] order-4 bg-gradient-to-r from-purple-500/10 to-blue-500/10"
+          asChild
+        >
+          <Link href="/deploy">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="mr-2 h-4 w-4"
+            >
+              <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
+            </svg>
+            Deploy your own model
+          </Link>
+        </Button>
+      )}
+
       <Sheet>
         <SheetTrigger asChild>
           <Button
             variant="outline"
-            className="py-1.5 px-3 h-fit md:h-[34px] order-4 md:ml-auto"
+            className="py-1.5 px-3 h-fit md:h-[34px] order-5 md:ml-auto"
           >
             View Billing
           </Button>
@@ -95,19 +121,25 @@ function PureChatHeader({
           <div className="grid gap-4 py-4">
             {/* Placeholder: Current Plan */}
             <div className="flex flex-col space-y-1.5">
-              <p className="text-sm font-medium text-muted-foreground">Current Plan</p>
+              <p className="text-sm font-medium text-muted-foreground">
+                Current Plan
+              </p>
               <p className="font-semibold">Pro Plan ($20/month)</p>
             </div>
 
             {/* Placeholder: Usage */}
             <div className="flex flex-col space-y-1.5">
-              <p className="text-sm font-medium text-muted-foreground">Current Cycle Usage</p>
+              <p className="text-sm font-medium text-muted-foreground">
+                Current Cycle Usage
+              </p>
               <p>Messages: 1,234 / 10,000</p>
             </div>
 
             {/* Placeholder: Payment Method */}
             <div className="flex flex-col space-y-1.5">
-              <p className="text-sm font-medium text-muted-foreground">Payment Method</p>
+              <p className="text-sm font-medium text-muted-foreground">
+                Payment Method
+              </p>
               <p>Visa ending in **** 4242</p>
             </div>
 

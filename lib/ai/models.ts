@@ -4,6 +4,16 @@ interface ChatModel {
   id: string;
   name: string;
   description: string;
+  provider?: string;
+  modelName?: string;
+  contextLength?: number;
+  baseURL?: string;
+  apiKey?: {
+    value: string;
+    envVar: string;
+    required: boolean;
+  };
+  enabled?: boolean;
 }
 
 export const chatModels: Array<ChatModel> = [
@@ -26,6 +36,21 @@ export const chatModels: Array<ChatModel> = [
     id: 'custom-llama2',
     name: 'Llama 2 (Custom)',
     description: 'Meta Llama 2 on Radium Cloud',
+  },
+  {
+    id: 'deepseek-r1',
+    provider: 'custom',
+    modelName: '/home/radium/models/deepseek-ai/DeepSeek-R1',
+    name: 'DeepSeek R1',
+    description: 'DeepSeek R1 model running on local endpoint',
+    contextLength: 4096, // Assuming a default, adjust if known
+    baseURL: 'http://10.100.110.20:8001/v1',
+    apiKey: {
+      value: 'empty', // Based on 'Authorization: Bearer empty'
+      envVar: 'CUSTOM_LLM_API_KEY', // Optional: If we want to control via env
+      required: false,
+    },
+    enabled: true,
   },
   /*
   {

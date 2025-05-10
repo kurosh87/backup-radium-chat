@@ -22,12 +22,14 @@ export function Chat({
   selectedChatModel,
   selectedVisibilityType,
   isReadonly,
+  showDeployButton = false,
 }: {
   id: string;
   initialMessages: Array<UIMessage>;
   selectedChatModel: string;
   selectedVisibilityType: VisibilityType;
   isReadonly: boolean;
+  showDeployButton?: boolean;
 }) {
   const { mutate } = useSWRConfig();
 
@@ -72,6 +74,7 @@ export function Chat({
           selectedModelId={selectedChatModel}
           selectedVisibilityType={selectedVisibilityType}
           isReadonly={isReadonly}
+          showDeployButton={showDeployButton}
         />
 
         <Messages
