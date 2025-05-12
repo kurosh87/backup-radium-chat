@@ -27,7 +27,7 @@ import {
   type Chat,
 } from './schema';
 import type { ArtifactKind } from '@/components/artifact';
-import { generateHashedPassword } from './utils';
+// Remove password hashing since Clerk handles authentication
 
 // Optionally, if not using email/pass login, you can
 // use the Drizzle adapter for Auth.js / NextAuth
@@ -37,22 +37,81 @@ import { generateHashedPassword } from './utils';
 const client = postgres(process.env.POSTGRES_URL!);
 const db = drizzle(client);
 
-export async function getUser(email: string): Promise<Array<User>> {
+export async function getUserByEmail(email: string): Promise<Array<User>> {
   try {
     return await db.select().from(user).where(eq(user.email, email));
   } catch (error) {
-    console.error('Failed to get user from database');
+    console.error('Failed to get user by email from database');
     throw error;
   }
 }
 
-export async function createUser(email: string, password: string) {
-  const hashedPassword = generateHashedPassword(password);
-
+export async function getUserByClerkId(clerkId: string): Promise<User | undefined> {
   try {
-    return await db.insert(user).values({ email, password: hashedPassword });
+    const users = await db.select().from(user).where(eq(user.clerkId, clerkId));
+    return users[0];
+  } catch (error) {
+    console.error('Failed to get user by Clerk ID from database');
+    throw error;
+  }
+}
+
+export async function createUser({
+  clerkId,
+  email,
+  firstName,
+  lastName,
+  imageUrl,
+}: {
+  clerkId: string;
+  email: string;
+  firstName?: string;
+  lastName?: string;
+  imageUrl?: string;
+}) {
+  try {
+    return await db.insert(user).values({
+      clerkId,
+      email,
+      firstName,
+      lastName,
+      imageUrl,
+      createdAt: new Date(),
+    });
   } catch (error) {
     console.error('Failed to create user in database');
+    throw error;
+  }
+}
+
+export async function updateUser({
+  clerkId,
+  email,
+  firstName,
+  lastName,
+  imageUrl,
+}: {
+  clerkId: string;
+  email?: string;
+  firstName?: string;
+  lastName?: string;
+  imageUrl?: string;
+}) {
+  try {
+    const updateData: Partial<User> = {};
+    
+    if (email !== undefined) updateData.email = email;
+    if (firstName !== undefined) updateData.firstName = firstName;
+    if (lastName !== undefined) updateData.lastName = lastName;
+    if (imageUrl !== undefined) updateData.imageUrl = imageUrl;
+    updateData.updatedAt = new Date();
+    
+    return await db
+      .update(user)
+      .set(updateData)
+      .where(eq(user.clerkId, clerkId));
+  } catch (error) {
+    console.error('Failed to update user in database');
     throw error;
   }
 }

@@ -1,17 +1,31 @@
-import NextAuth from 'next-auth';
+import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server';
 
-import { authConfig } from '@/app/(auth)/auth.config';
+// Define public routes that don't require authentication
+const isPublicRoute = createRouteMatcher([
+  // Application-specific routes
+  '/login(.*)',
+  '/register(.*)',
+  '/deploy(.*)',
+  
+  // Clerk authentication routes (needed for callbacks and OAuth)
+  '/api/auth/(.*)',
+  '/clerk/(.*)',
+  '/.well-known/(.*)',
+  '/sign-in/(.*)',
+  '/sign-up/(.*)'
+]);
 
-export default NextAuth(authConfig).auth;
+// Protect all routes except public ones
+export default clerkMiddleware(async (auth, req) => {
+  if (!isPublicRoute(req)) {
+    await auth.protect();
+  }
+});
 
+// Skip Next.js internals and static files
 export const config = {
   matcher: [
-    '/',
-    '/:id',
-    '/api/:path*',
-    '/login',
-    '/register',
-    // Exclude deploy routes for testing/development
-    '/((?!deploy|_next/static|_next/image|favicon.ico).*)',
+    '/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)',
+    '/(api|trpc)(.*)',
   ],
 };

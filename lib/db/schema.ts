@@ -12,9 +12,14 @@ import {
 } from 'drizzle-orm/pg-core';
 
 export const user = pgTable('User', {
-  id: uuid('id').primaryKey().notNull().defaultRandom(),
+  id: uuid('id').primaryKey().notNull().defaultRandom(), // Keep UUID as primary key
+  clerkId: varchar('clerkId', { length: 64 }).notNull().unique(), // Store Clerk user ID
   email: varchar('email', { length: 64 }).notNull(),
-  password: varchar('password', { length: 64 }),
+  firstName: varchar('firstName', { length: 64 }),
+  lastName: varchar('lastName', { length: 64 }),
+  imageUrl: text('imageUrl'),
+  createdAt: timestamp('createdAt').notNull().defaultNow(),
+  updatedAt: timestamp('updatedAt'),
 });
 
 export type User = InferSelectModel<typeof user>;
