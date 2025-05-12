@@ -1,6 +1,5 @@
 'use client';
 
-import type { User } from 'next-auth';
 import { useRouter } from 'next/navigation';
 
 import { PlusIcon } from '@/components/icons';
@@ -20,10 +19,10 @@ import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
 import Image from 'next/image';
 
 export function AppSidebar({
-  user,
+  isSignedIn,
   section = 'chat',
 }: {
-  user: User | undefined;
+  isSignedIn?: boolean;
   section?: 'chat' | 'deploy';
 }) {
   const router = useRouter();
@@ -76,7 +75,7 @@ export function AppSidebar({
       </SidebarHeader>
       <SidebarContent>
         {section === 'chat' ? (
-          <SidebarHistory user={user} />
+          <SidebarHistory isSignedIn={isSignedIn} />
         ) : (
           <div className="px-2 py-2">
             <h2 className="mb-2 px-4 text-lg font-semibold tracking-tight">
@@ -177,7 +176,7 @@ export function AppSidebar({
           </div>
         )}
       </SidebarContent>
-      <SidebarFooter>{user && <SidebarUserNav user={user} />}</SidebarFooter>
+      <SidebarFooter>{isSignedIn && <SidebarUserNav />}</SidebarFooter>
     </Sidebar>
   );
 }

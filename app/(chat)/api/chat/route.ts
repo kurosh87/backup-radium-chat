@@ -10,7 +10,7 @@ import {
 import { createOpenAI, type OpenAIProvider } from '@ai-sdk/openai';
 import { fireworks } from '@ai-sdk/fireworks';
 import { deepinfra } from '@ai-sdk/deepinfra';
-import { auth } from '@/app/(auth)/auth';
+import { auth } from '@clerk/nextjs/server'; // Changed to import from Clerk
 import { systemPrompt } from '@/lib/ai/prompts';
 import {
   deleteChatById,
@@ -55,7 +55,7 @@ export async function POST(request: Request) {
 
     const session = await auth();
 
-    if (!session?.user?.id) {
+    if (!session?.userId) {
       return new Response('Unauthorized', { status: 401 });
     }
 
@@ -72,9 +72,9 @@ export async function POST(request: Request) {
         message: userMessage,
       });
 
-      await saveChat({ id, userId: session.user.id, title });
+      await saveChat({ id, userId: session.userId, title });
     } else {
-      if (chat.userId !== session.user.id) {
+      if (chat.userId !== session.userId) {
         return new Response('Forbidden', { status: 403 });
       }
     }
@@ -237,15 +237,15 @@ export async function POST(request: Request) {
           experimental_generateMessageId: generateUUID,
           tools: {
             getWeather,
-            createDocument: createDocument({ session, dataStream }),
-            updateDocument: updateDocument({ session, dataStream }),
-            requestSuggestions: requestSuggestions({
-              session,
+            createDocument: createDocument({ userId: session.userId, dataStream }), // Changed to pass userId
+            updateDocument: updateDocument({ userId: session.userId, dataStream }), // Changed to pass userId
+            requestSuggestions: requestSuggestions({ // Changed to pass userId
+              userId: session.userId,
               dataStream,
             }),
           },
           onFinish: async ({ response }) => {
-            if (session.user?.id) {
+            if (session.userId) {
               try {
                 const assistantId = getTrailingMessageId({
                   messages: response.messages.filter(
@@ -318,14 +318,14 @@ export async function DELETE(request: Request) {
 
   const session = await auth();
 
-  if (!session?.user?.id) {
+  if (!session?.userId) {
     return new Response('Unauthorized', { status: 401 });
   }
 
   try {
     const chat = await getChatById({ id });
 
-    if (chat.userId !== session.user.id) {
+    if (chat.userId !== session.userId) {
       return new Response('Forbidden', { status: 403 });
     }
 

@@ -1,37 +1,41 @@
-import { auth } from '@/app/(auth)/auth';
-import { NextRequest } from 'next/server';
+import { auth } from '@clerk/nextjs/server';
+import { type NextRequest, NextResponse } from 'next/server';
 import { getChatsByUserId } from '@/lib/db/queries';
 
 export async function GET(request: NextRequest) {
   const { searchParams } = request.nextUrl;
 
-  const limit = parseInt(searchParams.get('limit') || '10');
+  const limit = Number.parseInt(searchParams.get('limit') || '10');
   const startingAfter = searchParams.get('starting_after');
   const endingBefore = searchParams.get('ending_before');
 
   if (startingAfter && endingBefore) {
-    return Response.json(
+    return new Response(
       'Only one of starting_after or ending_before can be provided!',
       { status: 400 },
     );
   }
 
-  const session = await auth();
+  const authResult = await auth();
 
-  if (!session?.user?.id) {
-    return Response.json('Unauthorized!', { status: 401 });
+  if (!authResult?.userId) {
+    return new Response('Unauthorized!', { status: 401 });
   }
+  const userId = authResult.userId;
 
   try {
     const chats = await getChatsByUserId({
-      id: session.user.id,
+      id: userId,
       limit,
-      startingAfter,
-      endingBefore,
+      startingAfter: startingAfter ? String(startingAfter) : null,
+      endingBefore: endingBefore ? String(endingBefore) : null,
     });
 
-    return Response.json(chats);
-  } catch (_) {
-    return Response.json('Failed to fetch chats!', { status: 500 });
+    return NextResponse.json(chats);
+  } catch (err) {
+    console.error('/api/history error. Original error:', err);
+    return new Response('Failed to fetch chats!', {
+      status: 500,
+    });
   }
 }

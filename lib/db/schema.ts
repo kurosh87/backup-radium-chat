@@ -12,14 +12,9 @@ import {
 } from 'drizzle-orm/pg-core';
 
 export const user = pgTable('User', {
-  id: uuid('id').primaryKey().notNull().defaultRandom(), // Keep UUID as primary key
-  clerkId: varchar('clerkId', { length: 64 }).notNull().unique(), // Store Clerk user ID
+  id: uuid('id').primaryKey().notNull().defaultRandom(),
   email: varchar('email', { length: 64 }).notNull(),
-  firstName: varchar('firstName', { length: 64 }),
-  lastName: varchar('lastName', { length: 64 }),
-  imageUrl: text('imageUrl'),
-  createdAt: timestamp('createdAt').notNull().defaultNow(),
-  updatedAt: timestamp('updatedAt'),
+  password: varchar('password', { length: 64 }),
 });
 
 export type User = InferSelectModel<typeof user>;
@@ -28,9 +23,7 @@ export const chat = pgTable('Chat', {
   id: uuid('id').primaryKey().notNull().defaultRandom(),
   createdAt: timestamp('createdAt').notNull(),
   title: text('title').notNull(),
-  userId: uuid('userId')
-    .notNull()
-    .references(() => user.id),
+  userId: text('userId').notNull(), // Changed to text for Clerk user IDs
   visibility: varchar('visibility', { enum: ['public', 'private'] })
     .notNull()
     .default('private'),

@@ -99,10 +99,10 @@ const formSchema = z.object({
     message: 'Please select a training file.',
   }),
   validationFile: z.string().optional(),
-  epochs: z.preprocess((val) => Number(val), z.number().min(1).max(10)),
-  batchSize: z.preprocess((val) => Number(val), z.number().min(1).max(64)),
+  epochs: z.coerce.number().min(1, { message: 'Epochs must be at least 1' }).max(10, { message: 'Epochs cannot exceed 10' }),
+  batchSize: z.coerce.number().min(1, { message: 'Batch size must be at least 1' }).max(64, { message: 'Batch size cannot exceed 64' }),
   learningRate: z.string(),
-  useLoRA: z.boolean().default(true),
+  useLoRA: z.boolean(),
 });
 
 export default function FineTuningPage() {

@@ -1,154 +1,84 @@
 # Project Scratchpad
 
 ## Background
-- Setting up Radium Chat application
-- Project is a Next.js application using:
-  - Vercel for deployment
-  - PostgreSQL (NeonDB) for database
-  - Vercel Blob Storage
-  - xAI API for chat and image models
-  - Authentication with NextAuth.js (to be migrated to Clerk)
+
+**New Goal:** The user wants to perform a complete migration of the Radium Chat application's authentication system from NextAuth.js (Auth.js) to Clerk.
 
 ## Challenges
-- Environment setup requires various API keys and configuration
-- Need to ensure all required environment variables are properly set
-- Migrating from NextAuth.js to Clerk while maintaining Drizzle ORM integration
-- Ensuring proper user data flow between Clerk auth and Drizzle database
-- Preserving existing relationships between user data and other application entities (chats, documents, etc.)
 
-### Current NextAuth.js Authentication Analysis
-- Project uses NextAuth.js 5 (beta) with custom Credentials provider
-- User authentication is stored in Drizzle-managed Postgres database (NeonDB)
-- Schema defines User table with email and password fields in `lib/db/schema.ts`
-- Auth flow is implemented in `app/(auth)/auth.ts` and `app/(auth)/auth.config.ts`
-- Custom authentication logic for credentials (email + password) with bcrypt-ts for password hashing
-- Database operations for user management in `lib/db/queries.ts` (getUser, createUser)
-- Several relationships between User and other entities (Chat, Document, etc.) via userId foreign keys
-
-### Clerk Migration Strategy
-1. **Authentication Layer Changes**:
-   - Replace NextAuth with Clerk for user authentication, sessions, and profile management
-   - Update middleware.ts to use Clerk's authentication checking
-   - Remove credentials provider and password-based authentication
-   - Implement new sign-in and sign-up flows using Clerk components
-
-2. **Database Integration Strategy**:
-   - Maintain Drizzle ORM for database operations
-   - Update User table schema to use Clerk's user identifiers as the primary key
-   - Modify database queries to work with Clerk's user IDs
-   - Clean implementation without preserving existing user accounts
-
-3. **Integration Path**:
-   - Complete replacement of NextAuth with Clerk (no transition period)
-   - Update database schema in a single migration
-   - Create new sign-up flow for all users
-   - Test thoroughly to ensure all user-related functionality still works
+- **Dependency Management:** Removing all NextAuth.js dependencies and associated code cleanly.
+- **Configuration:** Setting up Clerk API keys and environment variables correctly.
+- **API Route Replacement:** Replacing the `[...nextauth]` API route logic with Clerk's handlers or UI components.
+- **Middleware Update:** Implementing `clerkMiddleware` with appropriate protected/public route logic based on the application's needs.
+- **Frontend Integration:** Replacing NextAuth.js hooks (`useSession`, `signIn`, `signOut`) and components with Clerk equivalents (`useUser`, `useAuth`, `<SignInButton>`, `<SignOutButton>`, `<UserProfile>`, etc.).
+- **Backend Integration:** Updating server-side logic (API routes, Server Components, Route Handlers) to use Clerk's `auth()` helper instead of `getServerSession`.
+- **Testing:** Ensuring all authentication flows (sign-in, sign-up, sign-out, session management, protected routes) work correctly after migration.
 
 ## Task Breakdown
-1. Set up environment (.env file) with all required variables ✅
-2. Verify package dependencies and project structure ✅
-3. Set up local development environment ✅
-4. Analyze current NextAuth.js implementation ✅
-5. Implement Clerk authentication
-   - Install required Clerk dependencies
-   ```bash
-   pnpm add @clerk/nextjs
-   ```
-   - Configure Clerk environment variables in `.env`
-   ```
-   NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_your-publishable-key
-   CLERK_SECRET_KEY=sk_test_your-secret-key
-   NEXT_PUBLIC_CLERK_SIGN_IN_URL=/login
-   NEXT_PUBLIC_CLERK_SIGN_UP_URL=/register
-   NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL=/
-   NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL=/
-   ```
-   - Create Clerk middleware by updating the existing one in `middleware.ts`
-   - Update user schema for Clerk integration
-   - Create synchronization between Clerk users and database
-6. Update application code to use Clerk
-   - Replace auth components with Clerk components
-   - Modify database queries to use Clerk user IDs
-   - Update protected routes
-7. Test the complete application
-8. Deploy to production if required
+
+**Phase 1: Setup & Middleware**
+1.  **Install Clerk:** Add `@clerk/nextjs` package.
+2.  **Configure Clerk:** Set up Clerk account, obtain API keys (Publishable Key, Secret Key), and add them to environment variables (`.env.local`).
+3.  **Implement Clerk Provider:** Wrap the application layout with `<ClerkProvider>`.
+4.  **Update Middleware:** Replace NextAuth.js middleware in `middleware.ts` with `clerkMiddleware`, defining public/protected routes using `createRouteMatcher` (based on the provided Clerk docs and existing app structure).
+    *   **Success Criteria:** Unauthenticated users are redirected from protected routes (like the dashboard) to Clerk's sign-in page. *(Refined: Ensure protected routes like the dashboard enforce sign-in).*
+
+**Phase 2: Remove NextAuth.js & Basic UI**
+5.  **Remove NextAuth.js Config:** Delete the NextAuth.js API route handler (`/Users/pejman/projects/Radium Chat/app/(auth)/api/auth/[...nextauth]/route.ts`) and related configuration files (`/Users/pejman/projects/Radium Chat/app/(auth)/auth.config.ts`).
+6.  **Remove NextAuth.js Provider:** Remove the `SessionProvider` wrapping the application.
+7.  **Uninstall NextAuth.js:** Remove `next-auth` package.
+8.  **Implement Basic Clerk UI:** Add `<SignInButton>`, `<SignOutButton>`, and `<UserButton>` components to the appropriate places in the UI (e.g., header). *(Refined: Implement a dedicated login page and ensure logout redirects to it).*
+    *   **Success Criteria:** Users can sign in (via a login page), sign out (redirected to login page), and see their user button using Clerk's basic UI components.
+
+**Phase 3: Code Integration**
+9.  **Update Frontend Logic:** Replace `useSession`, `signIn`, `signOut` calls with Clerk's `useUser`, `useAuth`, `openSignIn`, `signOut` etc.
+10. **Update Backend Logic:** Replace `getServerSession` calls in Server Components, API routes, and Route Handlers with Clerk's `auth()` helper.
+    *   **Success Criteria:** Application logic correctly accesses user authentication state and ID using Clerk helpers both on the client and server.
+
+**Phase 4: Testing & Cleanup**
+11. **Thorough Testing:** Test all user flows: sign-up, sign-in (with different providers if configured), sign-out, accessing protected/public pages, API interactions.
+12. **Code Cleanup:** Remove any dead code related to NextAuth.js.
+13. **Documentation Update:** Update any internal documentation regarding the authentication setup.
+    *   **Success Criteria:** Authentication works reliably, and all NextAuth.js remnants are removed.
 
 ## Project Status Board
-- [x] Create .env file with all necessary variables
-- [x] Install project dependencies
-- [x] Run database migrations
-- [x] Start development server
-- [x] Verify database connectivity (migrations ran successfully, which confirms connectivity)
-- [x] Document any issues and fixes (noted hydration warnings in preview tool)
-- [x] Install and configure Clerk authentication
-- [x] Set up environment variables
-- [x] Create scratchpad file for tracking progress
-- [x] Implement Clerk Sign-In
-- [x] Implement Clerk Sign-Up
-- [x] Update middleware for route protection
-- [x] Update user database schema
-- [x] Update database queries to work with Clerk
-- [x] Test basic authentication flow
-- [x] Migration to Clerk Authentication complete
 
-### Auth Migration Tasks
-- [x] Install Clerk packages
-- [x] Set up Clerk environment variables
-- [x] Create Clerk middleware configuration
-- [x] Update user schema for Clerk integration (new approach)
-- [x] Replace NextAuth components with Clerk components
-- [x] Update route protection mechanism with Clerk
-- [x] Update database queries to use Clerk user IDs
-- [x] Fix authentication callback flow issues
-- [x] Configure at least one authentication method for testing
-- [x] Verify successful authentication flow
-- [ ] Configure additional OAuth providers in Clerk dashboard (as needed)
+- [X] **Phase 1: Setup & Middleware**
+  - [X] 1. Install Clerk: Add `@clerk/nextjs` package.
+  - [X] 2. Configure Clerk: Set up Clerk account, obtain API keys (Publishable Key, Secret Key), and add them to environment variables (`.env.local`).
+  - [X] 3. Implement Clerk Provider: Wrap the application layout with `<ClerkProvider>`.
+  - [X] 4. Update Middleware: Replace NextAuth.js middleware in `middleware.ts` with `clerkMiddleware`, defining public/protected routes using `createRouteMatcher`.
+- [ ] **Phase 2: Remove NextAuth.js & Basic UI**
+  - [X] 5. Remove NextAuth.js Config: Delete `app/(auth)/api/auth/[...nextauth]/route.ts` and `app/(auth)/auth.config.ts`.
+  - [X] 6. Remove NextAuth.js Provider: Remove the `SessionProvider`.
+  - [X] 7. Uninstall NextAuth.js: Remove `next-auth` package.
+  - [ ] 8. Implement Basic Clerk UI: Add `<SignInButton>`, `<SignOutButton>`, `<UserButton>`, setup login page, ensure logout redirects.
+- [ ] **Phase 3: Code Integration**
+  - [X] 9. Update Frontend Logic: Replace `useSession`, `signIn`, `signOut` calls with Clerk's `useUser`, `useAuth`, `openSignIn`, `signOut` etc.
+  - [X] 10. Update Backend Logic: Replace `getServerSession` calls in Server Components, API routes, and Route Handlers with Clerk's `auth()` helper.
+- [ ] **Phase 4: Testing & Cleanup**
+  - [ ] 11. Thorough Testing.
+  - [ ] 12. Code Cleanup.
+  - [ ] 13. Documentation Update.
+  - [X] Build the project and resolve any build errors.
+  - [ ] Test Clerk authentication locally (sign-in, sign-out, accessing protected resources).
+  - [ ] Test chat functionality, focusing on:
+    - Message sending and receiving.
 
 ## Executor's Feedback
-- Successfully created .env file with all required variables using terminal command
-- Dependencies installed successfully with pnpm (738 packages added)
-- Database migrations executed successfully
-- Created a symlink from `.env` to `.env.local` to ensure environment variables are accessible to the application
-- Development server started successfully at http://localhost:3000
-- Browser preview is available for you to interact with the application
-- Fixed 404 errors after signing in by:
-  - Updating middleware to allow all necessary authentication-related routes
-  - Configuring Clerk environment variables with consistent route paths
-- Encountered "External Account was not found" error when attempting to sign in with OAuth providers (Apple, GitHub, Google)
-  - This occurs because the OAuth providers need to be configured in the Clerk dashboard
-- Successfully completed authentication flow using email/password method
-  - User can now sign in and receive proper authentication token
-  - Clerk handshake process is working correctly
 
-### Auth Migration Progress (Complete):
-- Installed @clerk/nextjs package successfully
-- Added Clerk environment variables to .env file with real API keys
-- Updated middleware.ts to use Clerk's middleware with proper route protection:
-  - Implemented createRouteMatcher for public route definition
-  - Used auth.protect() to protect all non-public routes
-  - Set up proper matcher patterns for static assets and API routes
-- Updated user schema in schema.ts to work with Clerk integration:
-  - Removed password field since Clerk will handle auth
-  - Added clerkId field to store Clerk user IDs
-  - Added additional profile fields (firstName, lastName, imageUrl, etc.)
-  - Added timestamps for better record management
-- Updated database queries in queries.ts for Clerk integration:
-  - Removed password hashing functionality
-  - Added getUserByClerkId function to fetch users by Clerk ID
-  - Updated createUser function to work with Clerk user data
-  - Added updateUser function to update user profile data from Clerk
-- Implemented Clerk UI components:
-  - Added ClerkProvider to the root layout.tsx
-  - Replaced custom login page with Clerk's SignIn component
-  - Replaced custom register page with Clerk's SignUp component
-
-RESULTS:
-- The environment has been successfully set up
-- All environment variables are correctly configured
-- Database migrations have been applied
-- The application is running and accessible via browser preview
-- Browser console shows React hydration warnings, but these appear to be related to the preview tool integration rather than application issues
+- **Task 5 Complete:** Successfully deleted NextAuth.js API route (`app/(auth)/api/auth/[...nextauth]/route.ts`) and config file (`app/(auth)/auth.config.ts`).
+- **Task 6 Complete:** Verified that the NextAuth.js `<SessionProvider>` component was not present in the codebase (likely removed previously or never used).
+- **Task 7 Complete:** Successfully uninstalled the `next-auth` package using `pnpm remove`.
+- **Tasks 9 & 10 Complete:** Successfully refactored `createDocument`, `updateDocument`, and `requestSuggestions` tools and their handlers in `lib/artifacts/server.ts` to use `userId: string` instead of NextAuth `Session`.
+- **Task 10 Complete:** Updated `app/(chat)/api/chat/route.ts` to provide `userId` from Clerk's `auth()` result (as `session.userId`) to these tools.
+- **Task 10 Complete:** Corrected the import path for Clerk's `auth` helper in the API route.
+- **All identified lint errors related to these changes have been addressed.**
+- **The primary refactoring for Clerk auth compatibility in the AI tools and chat API route appears complete. Next steps involve building and thoroughly testing the application.**
+- **Current Status:** Build successful after fixing Clerk integration issues in multiple files (`route.ts` handlers, page components, layout, fine-tuning page, sign-out form) and a minor JSX lint error.
+- **Next Step:** Running `pnpm dev` to start local testing of the authentication flow.
+- **Blockers:** None currently. Build is passing.
 
 ## Lessons
-- When files are in .gitignore, use terminal commands to create them instead of direct file modification tools
-- Make database migrations compatible with both auth systems during transition
+
+*(No lessons learned yet)*

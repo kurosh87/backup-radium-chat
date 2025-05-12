@@ -1,4 +1,4 @@
-import { auth } from '@/app/(auth)/auth';
+import { auth } from '@clerk/nextjs/server';
 import type { ArtifactKind } from '@/components/artifact';
 import {
   deleteDocumentsByIdAfterTimestamp,
@@ -16,7 +16,7 @@ export async function GET(request: Request) {
 
   const session = await auth();
 
-  if (!session?.user?.id) {
+  if (!session?.userId) {
     return new Response('Unauthorized', { status: 401 });
   }
 
@@ -28,7 +28,7 @@ export async function GET(request: Request) {
     return new Response('Not found', { status: 404 });
   }
 
-  if (document.userId !== session.user.id) {
+  if (document.userId !== session.userId) {
     return new Response('Forbidden', { status: 403 });
   }
 
@@ -45,7 +45,7 @@ export async function POST(request: Request) {
 
   const session = await auth();
 
-  if (!session?.user?.id) {
+  if (!session?.userId) {
     return new Response('Unauthorized', { status: 401 });
   }
 
@@ -61,7 +61,7 @@ export async function POST(request: Request) {
   if (documents.length > 0) {
     const [document] = documents;
 
-    if (document.userId !== session.user.id) {
+    if (document.userId !== session.userId) {
       return new Response('Forbidden', { status: 403 });
     }
   }
@@ -71,7 +71,7 @@ export async function POST(request: Request) {
     content,
     title,
     kind,
-    userId: session.user.id,
+    userId: session.userId,
   });
 
   return Response.json(document, { status: 200 });
@@ -92,7 +92,7 @@ export async function DELETE(request: Request) {
 
   const session = await auth();
 
-  if (!session?.user?.id) {
+  if (!session?.userId) {
     return new Response('Unauthorized', { status: 401 });
   }
 
@@ -100,7 +100,7 @@ export async function DELETE(request: Request) {
 
   const [document] = documents;
 
-  if (document.userId !== session.user.id) {
+  if (document.userId !== session.userId) {
     return new Response('Unauthorized', { status: 401 });
   }
 

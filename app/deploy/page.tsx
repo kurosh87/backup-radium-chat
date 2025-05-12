@@ -86,7 +86,7 @@ export default function DeployDashboardPage() {
                       No active deployments
                     </h3>
                     <p className="text-sm text-muted-foreground mb-4">
-                      You haven't deployed any models yet. Deploy your first
+                      You haven&apos;t deployed any models yet. Deploy your first
                       model to get started.
                     </p>
                     <Button asChild>

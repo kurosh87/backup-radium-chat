@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { AppSidebar } from '@/components/app-sidebar';
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
-import { auth } from '../(auth)/auth';
+import { auth } from '@clerk/nextjs/server';
 
 export default async function DeployLayout({
   children,
@@ -23,7 +23,7 @@ export default async function DeployLayout({
       </div>
 
       <SidebarProvider defaultOpen={!isCollapsed}>
-        <AppSidebar user={session?.user} section="deploy" />
+        <AppSidebar isSignedIn={!!session?.userId} section="deploy" />
         <SidebarInset>{children}</SidebarInset>
       </SidebarProvider>
     </>
