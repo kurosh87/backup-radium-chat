@@ -12,7 +12,7 @@ import {
 } from 'drizzle-orm/pg-core';
 
 export const user = pgTable('User', {
-  id: uuid('id').primaryKey().notNull().defaultRandom(),
+  id: text('id').primaryKey().notNull(), // Changed uuid to text for Clerk IDs
   email: varchar('email', { length: 64 }).notNull(),
   password: varchar('password', { length: 64 }),
 });
@@ -103,16 +103,14 @@ export type Vote = InferSelectModel<typeof vote>;
 export const document = pgTable(
   'Document',
   {
-    id: uuid('id').notNull().defaultRandom(),
+    id: text('id').notNull(), // Changed uuid to text
     createdAt: timestamp('createdAt').notNull(),
     title: text('title').notNull(),
     content: text('content'),
     kind: varchar('text', { enum: ['text', 'code', 'image', 'sheet'] })
       .notNull()
       .default('text'),
-    userId: uuid('userId')
-      .notNull()
-      .references(() => user.id),
+    userId: text('userId').notNull(), // Changed uuid to text, removed references
   },
   (table) => {
     return {
@@ -126,16 +124,14 @@ export type Document = InferSelectModel<typeof document>;
 export const suggestion = pgTable(
   'Suggestion',
   {
-    id: uuid('id').notNull().defaultRandom(),
-    documentId: uuid('documentId').notNull(),
+    id: text('id').notNull(), // Changed uuid to text
+    documentId: text('documentId').notNull(),
     documentCreatedAt: timestamp('documentCreatedAt').notNull(),
     originalText: text('originalText').notNull(),
     suggestedText: text('suggestedText').notNull(),
     description: text('description'),
     isResolved: boolean('isResolved').notNull().default(false),
-    userId: uuid('userId')
-      .notNull()
-      .references(() => user.id),
+    userId: text('userId').notNull(), // Changed uuid to text, removed references
     createdAt: timestamp('createdAt').notNull(),
   },
   (table) => ({
