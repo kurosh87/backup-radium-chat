@@ -25,7 +25,7 @@ export function DeploymentHeader({ deployment }: DeploymentHeaderProps) {
         <div className="flex space-x-2 mt-3 sm:mt-0">
           <Button variant="outline" size="sm" className="border-gray-600 hover:bg-gray-700"><Copy size={16} className="mr-1"/> Clone</Button>
           <Button variant="outline" size="sm" className="border-gray-600 hover:bg-gray-700"><PlayCircle size={16} className="mr-1"/> Restart</Button>
-          <Button variant="outline" size="sm" className="border-gray-600 hover:bg-gray-700 text-red-400 border-red-800 hover:bg-red-900/20"><StopCircle size={16} className="mr-1"/> Stop</Button>
+          <Button variant="outline" size="sm" className="border-red-800 hover:bg-red-900/20 text-red-400"><StopCircle size={16} className="mr-1"/> Stop</Button>
         </div>
       </div>
     </header>

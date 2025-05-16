@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Progress } from '../../../../components/ui/progress'; // Using relative path
+import { Progress } from '../../components/ui/progress'; // Using local version
 import { Button } from '@/components/ui/button';
 import { CheckCircle, Loader2, AlertTriangle } from 'lucide-react';
 import { useRouter } from 'next/navigation';
