@@ -1,4 +1,5 @@
 import 'server-only';
+import crypto from 'crypto';
 
 import {
   and,
@@ -48,9 +49,18 @@ export async function getUser(email: string): Promise<Array<User>> {
 
 export async function createUser(email: string, password: string) {
   const hashedPassword = generateHashedPassword(password);
+  // Generate a unique ID for the user
+  const id = crypto.randomUUID();
 
   try {
-    return await db.insert(user).values({ email, password: hashedPassword });
+    const newUser = {
+      id,
+      email,
+      password: hashedPassword
+    };
+    
+    const result = await db.insert(user).values(newUser).returning();
+    return result[0];
   } catch (error) {
     console.error('Failed to create user in database. Original error:', error);
     throw error;
