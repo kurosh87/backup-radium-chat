@@ -28,14 +28,16 @@ export const chatModels: Array<ChatModel> = [
     description: 'Uses advanced reasoning',
   },
   {
-    id: 'gpt-4.5-preview',
-    name: 'Another Test Model',
-    description: 'A test model configuration',
-  },
-  {
     id: 'custom-llama2',
     name: 'Llama 2 (Custom)',
     description: 'Meta Llama 2 on Radium Cloud',
+  },
+  // Commenting out other models for now
+  /*
+  {
+    id: 'gpt-4.5-preview',
+    name: 'Another Test Model',
+    description: 'A test model configuration',
   },
   {
     id: 'deepseek-r1',
@@ -43,27 +45,14 @@ export const chatModels: Array<ChatModel> = [
     modelName: '/home/radium/models/deepseek-ai/DeepSeek-R1',
     name: 'DeepSeek R1',
     description: 'DeepSeek R1 model running on local endpoint',
-    contextLength: 4096, // Assuming a default, adjust if known
+    contextLength: 4096,
     baseURL: 'http://10.100.110.20:8001/v1',
     apiKey: {
-      value: 'empty', // Based on 'Authorization: Bearer empty'
-      envVar: 'CUSTOM_LLM_API_KEY', // Optional: If we want to control via env
+      value: 'empty',
+      envVar: 'CUSTOM_LLM_API_KEY',
       required: false,
     },
     enabled: true,
-  },
-  /*
-  {
-    id: 'fireworks-deepseek-r1',
-    name: 'DeepSeek R1 (Fireworks)',
-    description: 'Reasoning model via Fireworks AI',
-  },
-  */
-  /*
-  {
-    id: 'deepinfra-llama4-maverick',
-    name: 'Llama 4 Maverick (DeepInfra)',
-    description: 'Llama 4 17B Instruct via DeepInfra',
   },
   */
 ];

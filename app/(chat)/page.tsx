@@ -21,7 +21,7 @@ export default async function Page() {
           selectedChatModel={DEFAULT_CHAT_MODEL}
           selectedVisibilityType="private"
           isReadonly={false}
-          showDeployButton={true}
+          showDeployButton={false}
         />
         <DataStreamHandler id={id} />
       </>
@@ -37,7 +37,7 @@ export default async function Page() {
         selectedChatModel={modelIdFromCookie.value}
         selectedVisibilityType="private"
         isReadonly={false}
-        showDeployButton={true}
+        showDeployButton={false}
       />
       <DataStreamHandler id={id} />
     </>
