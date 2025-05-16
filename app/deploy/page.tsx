@@ -40,9 +40,9 @@ export default function DeployDashboardPage() {
           </Link>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
           {/* Main Content Area */}
-          <div className="lg:col-span-2 space-y-6">
+          <div className="lg:col-span-9 space-y-6">
             {/* Quick Actions Card */}
             <Card className="col-span-1 md:col-span-2 lg:col-span-3 bg-muted/30 dark:bg-muted/10 border-dashed border-primary/50">
               <CardHeader>
@@ -99,7 +99,7 @@ export default function DeployDashboardPage() {
           </div>
 
           {/* Right Sidebar Info Panel */}
-          <div className="lg:col-span-1 space-y-6">
+          <div className="lg:col-span-3 space-y-6">
             <Card className="sticky top-6">
               <CardHeader>
                 <CardTitle>Working with deployments</CardTitle>

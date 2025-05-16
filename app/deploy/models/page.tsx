@@ -403,17 +403,19 @@ export default function ModelsPage() {
         selectedVisibilityType="private"
         isReadonly={true}
       />
-      <main className="flex-1 overflow-y-auto p-6">
+      <main className="flex-1 overflow-y-auto p-8 max-w-[2000px] mx-auto w-full">
         <div className="flex justify-between items-center mb-6">
           <PageHeader
             title="Model Deployment"
             description="Deploy and manage AI models"
           />
-          <Button>Deploy New Model</Button>
+          <Button asChild>
+            <Link href="/deploy/new">Deploy New Model</Link>
+          </Button>
         </div>
 
-        <Tabs defaultValue="available">
-          <TabsList className="mb-6">
+        <Tabs defaultValue="available" className="space-y-6">
+          <TabsList className="mb-8">
             <TabsTrigger value="available">Available Models</TabsTrigger>
             <TabsTrigger value="deployed">My Deployments</TabsTrigger>
           </TabsList>
@@ -435,8 +437,9 @@ export default function ModelsPage() {
               </div>
             </div>
 
-            <div className="rounded-md border">
-              <Table>
+            <div className="rounded-lg border bg-card shadow-sm overflow-hidden">
+              <div className="overflow-x-auto">
+                <Table className="min-w-[1000px]">
                 <TableHeader>
                   {table.getHeaderGroups().map((headerGroup) => (
                     <TableRow key={headerGroup.id}>
@@ -483,7 +486,8 @@ export default function ModelsPage() {
                     </TableRow>
                   )}
                 </TableBody>
-              </Table>
+                </Table>
+              </div>
             </div>
 
             <div className="flex items-center justify-end space-x-2 py-4">
@@ -513,8 +517,8 @@ export default function ModelsPage() {
           <TabsContent value="deployed" className="space-y-4">
             {deployedModels.length > 0 ? (
               <>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2 w-full max-w-sm">
+                <div className="flex items-center justify-between gap-4">
+                  <div className="flex items-center gap-2 w-full max-w-xl">
                     <Search className="h-4 w-4 text-muted-foreground" />
                     <Input
                       placeholder="Search deployments..."
