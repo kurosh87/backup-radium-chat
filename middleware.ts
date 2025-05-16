@@ -1,36 +1,29 @@
 import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server';
 
-// Create a matcher for public routes
+// Define public routes that don't require authentication
 const isPublicRoute = createRouteMatcher([
-  '/',
   '/sign-in(.*)',
   '/sign-up(.*)',
-  '/api/webhooks(.*)',
   '/api/trpc(.*)',
+  '/api/webhooks(.*)',
   '/favicon.ico',
-  '/(.*?\\.?\\w+)$' // Match any static files
+  '/_next/static(.*)',
+  '/_next/image(.*)',
+  '/images/(.*)',
+  '/assets/(.*)'
 ]);
 
 export default clerkMiddleware(async (auth, req) => {
-  // If the route is public, don't require authentication
-  if (isPublicRoute(req)) {
-    return; // Don't do anything for public routes
+  // If the route is not public, require authentication
+  if (!isPublicRoute(req)) {
+    await auth.protect();
   }
-  
-  // For all other routes, require authentication
-  const session = await auth();
-  if (!session.userId) {
-    // This will redirect to the sign-in page
-    return new Response('Unauthorized', { status: 401 });
-  }
-  
-  return;
 });
 
 export const config = {
   matcher: [
     // Skip Next.js internals and all static files, unless found in search params
-    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|css|js|woff2?|ttf|ico|json)).*)',
+    '/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)',
     // Always run for API routes
     '/(api|trpc)(.*)',
   ],

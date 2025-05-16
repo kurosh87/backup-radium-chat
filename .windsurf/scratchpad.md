@@ -55,10 +55,10 @@
   - [X] 3. Implement Clerk Provider: Wrap the application layout with `<ClerkProvider>`.
   - [X] 4. Update Middleware: Replace NextAuth.js middleware in `middleware.ts` with `clerkMiddleware`, defining public/protected routes using `createRouteMatcher`.
 - [X] **Phase 2: Remove NextAuth.js & Basic UI**
-  - [X] 5. Remove NextAuth.js Config: Delete `app/(auth)/api/auth/[...nextauth]/route.ts` and `app/(auth)/auth.config.ts`.
-  - [X] 6. Remove NextAuth.js Provider: Remove the `SessionProvider`.
+  - [X] 5. Remove NextAuth.js Config: Delete the NextAuth.js API route handler (`/Users/pejman/projects/Radium Chat/app/(auth)/api/auth/[...nextauth]/route.ts`) and related configuration files (`/Users/pejman/projects/Radium Chat/app/(auth)/auth.config.ts`).
+  - [X] 6. Remove NextAuth.js Provider: Remove the `SessionProvider` wrapping the application.
   - [X] 7. Uninstall NextAuth.js: Remove `next-auth` package.
-  - [X] 8. Implement Basic Clerk UI: Add `<SignInButton>`, `<SignOutButton>`, `<UserButton>`, setup login page, ensure logout redirects.
+  - [X] 8. Implement Basic Clerk UI: Add `<SignInButton>`, `<SignOutButton>`, and `<UserButton>` components to the appropriate places in the UI (e.g., header). *(Refined: Implement a dedicated login page and ensure logout redirects to it).*
 - [X] **Phase 3: Code Integration**
   - [X] 9. Update Frontend Logic: Replace `useSession`, `signIn`, `signOut` calls with Clerk's `useUser`, `useAuth`, `openSignIn`, `signOut` etc.
   - [X] 10. Update Backend Logic: Replace `getServerSession` calls in Server Components, API routes, and Route Handlers with Clerk's `auth()` helper.
@@ -102,4 +102,197 @@
 
 ## Lessons
 
-*(No lessons learned yet)*
+*   When using ShadCN UI, if components are missing, use the command `npx shadcn@latest add <component-name> [other-component-names...]` to add them to the project. The older `shadcn-ui` package name is deprecated.
+*   Include info useful for debugging in the program output.
+*   Read the file before you try to edit it.
+*   If there are vulnerabilities that appear in the terminal, run `npm audit` before proceeding.
+
+---
+
+# Radium Chat - Deployment API & Backend Scaffolding Plan
+
+## Background (Deployment API)
+
+The user wants to build the backend infrastructure for the "Deployment" section of Radium Chat. This involves:
+-   Managing AI models (listing available models, potentially from a database).
+-   Handling fine-tuning processes (uploading datasets, creating fine-tuning jobs, tracking status).
+-   Managing model deployments (creating new deployments, listing user's deployments, tracking status).
+-   Leveraging the existing Neon database with Drizzle ORM.
+-   Initially, API routes will be mocked to simulate backend behavior before full implementation.
+
+## Challenges (Deployment API)
+
+-   **Schema Design:** Defining robust and flexible Drizzle schemas for models, fine-tuning jobs (including dataset storage/references), and deployments.
+-   **API Design:** Structuring RESTful API routes that are intuitive and cover all necessary CRUD operations for the deployment lifecycle.
+-   **Mocking Strategy:** Implementing mock services that realistically simulate asynchronous operations like fine-tuning and deployment provisioning.
+-   **File Handling:** Securely handling file uploads for fine-tuning datasets (e.g., JSON files).
+-   **State Management:** Tracking the status of long-running processes (fine-tuning, deployment) and reflecting this in the API.
+-   **User Association:** Ensuring all deployment-related entities (models, jobs, deployments) are correctly associated with users.
+
+## Task Breakdown (Deployment API)
+
+**Phase 1: New Deployment Form UI (React Components) - Revised to Accordion Layout**
+*   **Overall Success Criteria:** A single-page React component-based form, styled according to the provided screenshots, is implemented for the new deployment wizard. The form will manage its state locally on the client-side. Upon final submission (e.g., "Deploy Now" or "Accept & Continue" on the payment step), the collected form data will be logged to the console, as backend integration will come in a later phase.
+
+1.  **Main Page Structure: (`page.tsx`)** 
+    *   Create a top-level component for the "New Deployment" wizard.
+    *   Implement client-side state management for current step and form data.
+    *   Reusable components for wizard navigation (e.g., Header with back arrow, step indicators if applicable, "Continue" / "Back" / "Deploy Now" buttons).
+    *   Apply general styling (dark theme, layout) based on screenshots.
+    *   Success Criteria: Basic wizard shell is in place, allowing navigation between conceptual steps (even if steps are empty initially).
+
+2.  **Accordion Scaffolding: (`page.tsx` using Radix UI)**
+    *   Implement Radix UI Accordion component.
+    *   Create accordion items: Foundation Model, Hardware Configuration, Scaling Configuration, Environment Configuration, Security Settings.
+    *   Add basic placeholder content within each accordion item.
+    *   Success Criteria: Accordion layout is functional, with placeholder content.
+
+3.  **Floating Footer: (`page.tsx`)** 
+    *   Implement a fixed/sticky footer.
+    *   Apply glassmorphism effect (backdrop-blur, opacity).
+    *   Display placeholder for 'Estimated Cost' and 'Deploy Now' button.
+    *   Basic cost calculation logic (updates based on some initial fields).
+    *   Success Criteria: Floating footer is in place, with basic cost calculation.
+
+4.  **Accordion Content - Foundation Model:**
+    *   Implement UI for selecting foundation models (as per screenshot).
+    *   Success Criteria: User can select foundation models.
+
+5.  **Accordion Content - Hardware Configuration:**
+    *   Implement UI for memory allocation, instance type, GPU selection.
+    *   Success Criteria: User can configure hardware settings.
+
+6.  **Accordion Content - Scaling Configuration:**
+    *   Implement UI for min/max replicas, autoscaling triggers (CPU/GPU/Custom).
+    *   Success Criteria: User can configure scaling settings.
+
+7.  **Accordion Content - Environment Configuration:**
+    *   Implement UI for environment type, region, request priority, env vars, secrets.
+    *   Success Criteria: User can configure environment settings.
+
+8.  **Accordion Content - Security Settings:**
+    *   Implement UI for access control, private endpoint, request logging, API token - (`SecuritySettingsSelector.tsx` created and integrated, awaiting verification).
+    *   Success Criteria: User can configure security settings.
+
+9.  **Implement full dynamic cost calculation based on all form inputs.**
+    *   Success Criteria: Estimated cost updates dynamically based on user input.
+
+10. **Terms of Service Step (Modal or separate section).**
+    *   Success Criteria: User can view terms of service.
+
+11. **Payment Method Step (Modal or separate section).**
+    *   Success Criteria: User can input payment method.
+
+12. **Deployment Progress/Detail Views (post-MVP or separate pages).**
+    *   Success Criteria: User can view deployment progress and details.
+
+**Phase 2: Database Schemas (Drizzle)**
+
+13. **Define Model Schema:**
+    *   Create `models` table schema in `lib/db/schema.ts`.
+    *   Fields: `id` (PK), `name`, `description`, `type` (e.g., 'chat', 'completion'), `size` (e.g., '7B', '70B'), `contextWindow` (e.g., '4K', '32K'), `pricingInput` (per 1M tokens), `pricingOutput` (per 1M tokens), `status` (e.g., 'available', 'preview'), `provider` (e.g., 'Meta', 'DeepSeek'), `createdAt`, `updatedAt`.
+    *   Seed initial model data (mock).
+    *   Success Criteria: Drizzle schema for models is defined, and migrations are generated and applied. Mock data is queryable.
+
+14. **Define FineTuningJob Schema:**
+    *   Create `fineTuningJobs` table schema in `lib/db/schema.ts`.
+    *   Fields: `id` (PK), `userId` (FK to users), `baseModelId` (FK to models), `suffix` (user-defined), `jobType` (e.g., 'SFT', 'DPO'), `status` (e.g., 'pending', 'running', 'completed', 'failed', 'cancelled'), `runTime`, `createdAt`, `updatedAt`, `trainingFileId` (reference to uploaded file), `validationFileId` (optional), `errorMessages` (TEXT).
+    *   Success Criteria: Drizzle schema for fine-tuning jobs is defined, migrations generated and applied.
+
+15. **Define Deployment Schema (incorporating New Deployment Form fields):**
+    *   Create `deployments` table schema in `lib/db/schema.ts`.
+    *   Fields: `id` (PK), `userId` (FK to users), `modelId` (FK to models or store model details directly), `endpointName`, `status` (e.g., 'provisioning', 'active', 'inactive', 'failed', 'deleted'), `createdAt`, `updatedAt`, `requestsCount` (INT, default 0), `avgLatencyMs` (INT, default 0).
+    *   Additional fields from the form: `configurationPreset` (text), `selectedModelSize` (text), `hardwareConfig` (jsonb or text), `scalingConfig` (jsonb or text), `environmentConfig` (jsonb or text), `securitySettings` (jsonb or text), `estimatedHourlyCost` (numeric), `estimatedMonthlyCost` (numeric).
+    *   Success Criteria: Drizzle schema for deployments, capable of storing all form data, is defined, migrations generated and applied.
+
+**Phase 3: Mock API Routes (Next.js Route Handlers)**
+
+16. **Models API Routes:**
+    *   `GET /api/deploy/models`: List available models (from the `models` table).
+    *   Success Criteria: Frontend can fetch a list of available models for the wizard.
+
+17. **Fine-tuning API Routes:**
+    *   (As previously planned, if fine-tuning choices impact deployment options, otherwise can be deferred)
+
+18. **Deployments API Routes (New & Existing):
+    *   `POST /api/deploy/deployments`: Create a new deployment.
+        *   Mock: Accept all data from the New Deployment Form. Create a record in `deployments` table with 'provisioning' status. Simulate provisioning (provisioning -> active/failed).
+    *   `GET /api/deploy/deployments`: List user's deployments.
+    *   `GET /api/deploy/deployments/{deploymentId}`: Get details.
+    *   `DELETE /api/deploy/deployments/{deploymentId}`: Delete.
+    *   Success Criteria: The New Deployment Form can submit its data. Other parts of the UI can list and view deployments.
+
+**Phase 4: Backend Integration & Refinement**
+
+19. Connect New Deployment Form UI to the `POST /api/deploy/deployments` API route.
+20. Ensure data from the form is correctly saved to the database via the API.
+21. Refine UI to fetch data from mock APIs (e.g., available models, existing deployments).
+22. Implement actual (simulated) deployment logic triggered by API, updating status in DB.
+    *   Success Criteria: The end-to-end flow from form submission to (mock) deployment creation and status update is functional.
+
+## Project Status Board (Deployment API)
+
+**Phase 1: New Deployment Form UI (React Components) - Revised to Accordion Layout**
+- [x] 1. Main Page Structure: (`page.tsx`)
+    -   [x] Setup single-page layout with header (Endpoint Name input field).
+    -   [x] Initialize expanded `DeploymentFormData` state.
+- [x] 2. Accordion Scaffolding: (`page.tsx` using Radix UI)
+    -   [x] Implement Radix UI Accordion component.
+    -   [x] Create accordion items: Foundation Model, Hardware Configuration, Scaling Configuration, Environment Configuration, Security Settings.
+    -   [x] Add basic placeholder content within each accordion item.
+- [x] 3. Floating Footer: (`page.tsx`)
+    -   [x] Implement a fixed/sticky footer.
+    -   [x] Apply glassmorphism effect (backdrop-blur, opacity).
+    -   [x] Display placeholder for 'Estimated Cost' and 'Deploy Now' button.
+    -   [x] Basic cost calculation logic (updates based on some initial fields).
+- [-] 4. Accordion Content - Foundation Model:
+    -   [x] Implement UI for selecting foundation models (as per screenshot) - (`FoundationModelSelector.tsx` created and integrated, awaiting verification).
+- [-] 5. Accordion Content - Hardware Configuration:
+    -   [x] Implement UI for memory allocation, instance type, GPU selection - (`HardwareConfigurationSelector.tsx` created and integrated, awaiting verification).
+- [-] 6. Accordion Content - Scaling Configuration:
+    -   [x] Implement UI for min/max replicas, autoscaling triggers (CPU/GPU/Custom) - (`ScalingConfigurationSelector.tsx` created and integrated, awaiting verification).
+- [-] 7. Accordion Content - Environment Configuration:
+    -   [x] Implement UI for environment type, region, request priority, env vars, secrets - (`EnvironmentConfigurationSelector.tsx` created and integrated, awaiting verification).
+- [-] 8. Accordion Content - Security Settings:
+    -   [x] Implement UI for access control, private endpoint, request logging, API token - (`SecuritySettingsSelector.tsx` created and integrated, awaiting verification).
+- [-] 9. Implement full dynamic cost calculation based on all form inputs.
+    *   **2025-05-13**: Implemented Task 9 (Full Dynamic Cost Calculation). The `useEffect` hook in `page.tsx` was updated to calculate costs based on selected foundation model, hardware instance, scaling configuration (min/max instances, autoscaling enabled), and placeholder costs for private endpoint and request logging. `instanceTypeOptions` (with costs) is now imported from `HardwareConfigurationSelector.tsx`. Awaiting verification.
+- [-] 10. Terms of Service Step (Modal or separate section).
+- [x] 10. Terms of Service Step (Modal or separate section).
+- [-] 11. Payment Method Step (Modal or separate section).
+- [-] 12. Deployment Progress/Detail Views (post-MVP or separate pages).
+- [-] 13. Final Review and Submit Button Logic (This might be partially covered by ToS & Payment).
+- [-] 14. Define Model Schema & Seed Data
+- [-] 15. Define FineTuningJob Schema
+- [-] 16. Define Deployment Schema (for New Deployment Form data)
+
+**Phase 3: Mock API Routes (Next.js Route Handlers)**
+- [-] 16. Models API Routes (GET)
+- [-] 17. Fine-tuning API Routes (if needed for deployment UI)
+- [-] 18. Deployments API Routes (POST create, GET list, GET single, DELETE)
+
+**Phase 4: Backend Integration & Refinement**
+- [-] 19. Connect Form UI to POST API
+- [-] 20. Verify DB Save via API
+- [-] 21. Refine UI with API data
+- [-] 22. Implement Mock Deployment Logic & Status Updates
+
+## Executor's Feedback (Deployment API)
+
+*   **2025-05-13**: Implemented Task 7 (Environment Configuration). `EnvironmentConfigurationSelector.tsx` created and integrated into `page.tsx`. Scratchpad updated. Ensured ShadCN components were added via CLI; `slider.tsx` is now present. Lesson added for ShadCN CLI usage.
+*   **2025-05-13**: Implemented Task 8 (Security Settings). `SecuritySettingsSelector.tsx` created and integrated. `page.tsx` updated with new form fields (apiTokenValue, privateEndpoint, requestLogging), handlers, and dummy token generation. Scratchpad updated.
+
+    All core accordion sections for user input are now implemented. The next focus will be on the comprehensive cost calculation logic.
+
+*   **2025-05-13**: Implemented Task 10 (Terms of Service Step). Created `TermsOfServiceModal.tsx` with placeholder text and acceptance checkbox. Integrated into `page.tsx`: added state for modal visibility (`showTermsModal`) and acceptance (`termsAccepted`). The main `handleDeploy` function now shows the modal if terms are not accepted. Upon acceptance, `handleActualDeployment` is called. Awaiting verification.
+
+Currently working on: **Task 11 - Payment Method Step (Modal or separate section).**
+
+## Lessons (Deployment API)
+
+*   When using ShadCN UI, if components are missing, use the command `npx shadcn@latest add <component-name> [other-component-names...]` to add them to the project. The older `shadcn-ui` package name is deprecated.
+*   Include info useful for debugging in the program output.
+*   Read the file before you try to edit it.
+*   If there are vulnerabilities that appear in the terminal, run `npm audit` before proceeding.
+
+```
