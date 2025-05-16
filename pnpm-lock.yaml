@@ -24,10 +24,10 @@ importers:
         specifier: ^1.2.10
         version: 1.2.10(zod@3.24.2)
       '@clerk/nextjs':
-        specifier: ^6.19.2
+        specifier: 6.19.2
         version: 6.19.2(next@15.3.0-canary.31(@opentelemetry/api@1.9.0)(@playwright/test@1.51.0)(react-dom@19.0.0-rc-45804af1-20241021(react@19.0.0-rc-45804af1-20241021))(react@19.0.0-rc-45804af1-20241021))(react-dom@19.0.0-rc-45804af1-20241021(react@19.0.0-rc-45804af1-20241021))(react@19.0.0-rc-45804af1-20241021)
       '@clerk/themes':
-        specifier: ^2.2.43
+        specifier: 2.2.43
         version: 2.2.43
       '@codemirror/lang-javascript':
         specifier: ^6.2.2
