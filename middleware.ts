@@ -10,7 +10,7 @@ const isPublicRoute = createRouteMatcher([
   '/_next/static(.*)',
   '/_next/image(.*)',
   '/images/(.*)',
-  '/assets/(.*)'
+  '/assets/(.*)',
 ]);
 
 export default clerkMiddleware(async (auth, req) => {
