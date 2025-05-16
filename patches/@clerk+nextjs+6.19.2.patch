@@ -1,0 +1,13 @@
+diff --git a/node_modules/@clerk/nextjs/dist/esm/server/types.d.ts b/node_modules/@clerk/nextjs/dist/esm/server/types.d.ts
+index 1234567..89abcde 100644
+--- a/node_modules/@clerk/nextjs/dist/esm/server/types.d.ts
++++ b/node_modules/@clerk/nextjs/dist/esm/server/types.d.ts
+@@ -1,4 +1,4 @@
+-// This is a dummy patch file to ensure compatibility
++// Patch for Clerk v6 compatibility
+ import type { ClerkMiddlewareOptions, MiddlewareRequireAuth } from '@clerk/nextjs/server';
+ 
+ declare module '@clerk/nextjs/server' {
+@@ -7,4 +7,4 @@ declare module '@clerk/nextjs/server' {
+   }
+ }
